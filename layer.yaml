@@ -1,4 +1,5 @@
 includes: ['layer:basic', 'interface:zookeeper', 'interface:hbase']
+repo: https://github.com/Qrama/layer-opentsdb.git
 options:
   basic:
     packages: [ 'default-jre',

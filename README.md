@@ -10,16 +10,11 @@ Deploy the OpenTSDB charm (link aanpassen):
 ```sh
 juju deploy opentsdb
 ```
-For OpenTSDB to work relations are needed with Zookeeper and HBase:
+For OpenTSDB to work relations are needed with Zookeeper and HBase. The "hadoop hbase"
+bundle contains everything you need.
 ```sh
-juju deploy Zookeeper
+juju deploy cs:bundle/hadoop-hbase-27
 ```
-```sh
-juju deploy HBase
-```
-It is possible that HBase and Zookeeper need additional relations so you will
-have to deploy those too. For example HBase needs the hadoop-plugin to work.
-
 To access OpenTSDB's GUI you have to expose OpenTSDB:
 ```sh
 juju expose opentsdb
@@ -27,12 +22,42 @@ juju expose opentsdb
 Browse to the public IP with port to see OpenTSDB's GUI. Here you can select
 metrics and graph them.
 
-## Example
+## How OpenTSDB can be used
 
-- HTTP api
-- Gebruik van tcollector
-- Graphg
+### HTTP API
+The recommended way to communicate with OpenTSDB is to use the HTTP API. For storing
+data the endpoint '/api/put' is used:
+```
+35.194.184.37:4242/api/put
+```
+With as JSON body:
+```
+{
+    "metric": "sys.cpu.nice",
+    "timestamp": 1346846400,
+    "value": 18,
+    "tags": {
+       "host": "web01",
+       "dc": "lga"
+    }
+}
+```
+[HTTP API documentation]
 
+### TCollector
+
+TCollector is a client-side process that gathers data from local collectors and pushes the data to OpenTSDB.
+[TCollector documentation]
+
+### Graph
+
+In order to inspect metrics you must go to OpenTSDB's GUI by browsing to the public
+ip and port (after you exposed the charm). There you can select metrics for a certain
+timeframe and plot them.
+
+### Telegraf
+
+https://jujucharms.com/telegraf/6
 
 # Known Limitations and Issues
 
@@ -43,3 +68,5 @@ metrics and graph them.
 - [OpenTSDB Homepage]
 
 [opentsdb homepage]: http://opentsdb.net/
+[http api documentation]: http://opentsdb.net/docs/build/html/api_http/put.html
+[tcollector documentation]: http://opentsdb.net/docs/build/html/user_guide/utilities/tcollector.html
