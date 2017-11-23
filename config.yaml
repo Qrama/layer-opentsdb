@@ -1,0 +1,62 @@
+options:
+  port:
+    type: int
+    default: 4242
+    description: |
+      The TCP port TSD should use for communications.
+  bind:
+    type: string
+    default: 0.0.0.0
+    description: |
+      The IPv4 network address to bind to.
+  tcp_no_delay:
+    type: boolean
+    default: True
+    description: |
+      Disable Nagel's algorithm.
+  keep_alive:
+    type: boolean
+    default: True
+    description: |
+      Determines whether or not to send keepalive packets to peers.
+  reuse_address:
+    type: boolean
+    default: True
+    description: |
+      Determines if the same socket should be used for new connections.
+  worker_threads:
+    type: int
+    default: 8
+    description: |
+      Number of worker threads dedicated to Netty.
+  async_io:
+    type: boolean
+    default: True
+    description: |
+      Whether or not to use NIO or tradditional blocking IO.
+  mode:
+    type: string
+    default: rw
+    description: |
+      Whether or not the TSD will allow writing data points.
+      Must be either "rw" to allow writing data or "ro" to block data point writes.
+  enable_chunked:
+    type: boolean
+    default: True
+    description: |
+      Whether or not to enable incoming chunk support for the HTTP RPC.
+  auto_create_metrics:
+    type: boolean
+    default: True
+    description: |
+      Whether or not to automatically create UIDs for new metric types.
+  enable_compaction:
+    type: boolean
+    default: True
+    description: |
+      Whether or not to enable data compaction in HBase.
+  flush_interval:
+    type: int
+    default: 1000
+    description: |
+      How often, in milliseconds, to flush the data point queue to storage.

@@ -1,0 +1,15 @@
+includes: ['layer:basic', 'interface:zookeeper', 'interface:hbase']
+options:
+  basic:
+    packages: [ 'default-jre',
+                'libboost-all-dev',
+                'automake',
+                'bison',
+                'flex',
+                'g++',
+                'libevent-dev',
+                'libssl-dev',
+                'libtool',
+                'make',
+                'pkg-config',
+                'gnuplot']
