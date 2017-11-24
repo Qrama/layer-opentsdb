@@ -134,9 +134,6 @@ def hbase_rel_removed():
     OpenTSDB must be restarted. The data is not automatically removed because
     this could lead to unpleasant scenario's. For example: user accidentally removing
     the relation with HBase would result in complete data loss."""
-    # hbase_servers = DB.get('hbase_servers')
-    # hbase_server = hbase_servers[0]
-    # delete_tables(hbase_server['host'])
     service_restart('opentsdb')
     remove_state('layer-opentsdb.hbase-configured')
 
