@@ -1,8 +1,9 @@
 #pylint: disable=c0111,c0325,c0301,e0401
 
 import subprocess
-import happybase
+from random import randint
 
+import happybase
 from charms.reactive import when, when_not, set_state, remove_state
 from charmhelpers.fetch.archiveurl import ArchiveUrlFetchHandler
 from charmhelpers.core import unitdata
@@ -80,6 +81,8 @@ def wait_hbase_ready(hbase):
 @when('zookeeper.ready')
 @when_not('layer-opentsdb.zookeeper-configured')
 def configure_zookeeper(zookeeper):
+    """When relationship is added with Zookeeper update config file
+     and restart OpenTSDB."""
     zookeepers = zookeeper.zookeepers()
     # Add zookeepers to the key-value store.
     DB.set('zookeepers', zookeepers)
@@ -94,12 +97,16 @@ def configure_zookeeper(zookeeper):
 @when('hbase.ready')
 @when_not('layer-opentsdb.hbase-configured')
 def configure_hbase(hbase):
+    """When relationship is added with HBase create necessary tables
+     and restart OpenTSDB."""
     hbase_servers = hbase.hbase_servers()
+    number_of_servers = len(hbase_servers)
     # Add hbase_servers to key-value store in case we need this info later on.
     DB.set('hbase_servers', hbase_servers)
     # Create necessary tables in HBase instance.
-    # Just pick the first server from the dict.
-    hbase_server = hbase_servers[0]
+    # Pick a random unit to create the tables.
+    random_number = randint(0, (len(number_of_servers)-1))
+    hbase_server = hbase_servers[random_number]
     create_tables(hbase_server['host'])
     # After the HBase relation is added we want to make sure that
     # OpenTSDB will be restarted.
@@ -112,21 +119,25 @@ def configure_hbase(hbase):
 @when_not('zookeeper.ready')
 def remove_zookeepers_config():
     """When the user removes the relation with zookeeper then the
-    zookeepers must be removed from config file."""
+    zookeepers must be removed from config file. OpenTSDB must be restarted."""
     DB.set('zookeepers', [])
     render_config()
+    service_restart('opentsdb')
     remove_state('layer-opentsdb.zookeeper-configured')
 
 
 @when('layer-opentsdb.hbase-configured')
 @when_not('hbase.joined')
 @when_not('hbase.ready')
-def remove_hbase_tables():
-    """When the user removes the relation with HBase then the
-    tables of OpenTSDB must be removed from HBase."""
-    hbase_servers = DB.get('hbase_servers')
-    hbase_server = hbase_servers[0]
-    delete_tables(hbase_server['host'])
+def hbase_rel_removed():
+    """When the user removes the relation with HBase then
+    OpenTSDB must be restarted. The data is not automatically removed because
+    this could lead to unpleasant scenario's. For example: user accidentally removing
+    the relation with HBase would result in complete data loss."""
+    # hbase_servers = DB.get('hbase_servers')
+    # hbase_server = hbase_servers[0]
+    # delete_tables(hbase_server['host'])
+    service_restart('opentsdb')
     remove_state('layer-opentsdb.hbase-configured')
 
 
@@ -155,6 +166,7 @@ def get_context():
 
 
 def get_zookeepers_config_line():
+    """Creates config line with zookeeper instance(s)."""
     zookeepers = DB.get('zookeepers')
     config_line = ''
 
@@ -171,6 +183,9 @@ def get_zookeepers_config_line():
 
 
 def create_tables(ip_hbase, thrift_port=9090):
+    """OpenTSDB needs tables in HBase to store its data. When a relation with
+    HBase is made then this procedure will execute and will create the necessary
+    tables in HBase."""
     # Connect with HBase instance.
     connection = happybase.Connection(host=ip_hbase, port=thrift_port, autoconnect=False)
     connection.open()
@@ -182,6 +197,7 @@ def create_tables(ip_hbase, thrift_port=9090):
         tables_decoded.append(table.decode('UTF-8'))
 
     # Create necessary tables for OpenTSDB.
+    # SNAPPY compression is used because LZO is not supported by HBase charm.
     if 'tsdb-uid' not in tables_decoded:
         connection.create_table(
             'tsdb-uid',
@@ -205,6 +221,8 @@ def create_tables(ip_hbase, thrift_port=9090):
 
 
 def delete_tables(ip_hbase, thrift_port=9090):
+    """Deletes OpenTSDB's tables from HBase. This procedure is used when the
+    user removes the relation between OpenTSDB and HBase. All data will be removed."""
     # Connect with HBase instance.
     connection = happybase.Connection(host=ip_hbase, port=thrift_port, autoconnect=False)
     connection.open()
@@ -215,9 +233,9 @@ def delete_tables(ip_hbase, thrift_port=9090):
     for table in tables:
         tables_decoded.append(table.decode('UTF-8'))
 
-    # If these tables exist then delete them.
-    table_names = ['tsdb-uid', 'tsdb', 'tsdb-tree', 'tsdb-meta']
-    for table in table_names:
+    # If the OpenTSDB exist then delete them.
+    opentsdb_tables = ['tsdb-uid', 'tsdb', 'tsdb-tree', 'tsdb-meta']
+    for table in opentsdb_tables:
         if table in tables_decoded:
             connection.delete_table(table, disable=True)
 
