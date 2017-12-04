@@ -12,10 +12,8 @@ Deploy the OpenTSDB charm:
 ```sh
 juju deploy cs:~tengu-team/opentsdb-0
 ```
-For OpenTSDB to work relations are needed with Zookeeper and HBase. The "hadoop hbase" bundle contains everything you need:
-```sh
-juju deploy cs:bundle/hadoop-hbase-27
-```
+For OpenTSDB to work relations are needed with Zookeeper and HBase. Add the relations
+when you got HBase and Zookeeper running .
 Then you need to add the relations:
 ```sh
 juju add-relation opentsdb hbase
