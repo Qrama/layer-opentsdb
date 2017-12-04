@@ -10,13 +10,18 @@ http://opentsdb.net
 
 Deploy the OpenTSDB charm:
 ```sh
-juju deploy opentsdb
+juju deploy cs:~tengu-team/opentsdb-0
 ```
 For OpenTSDB to work relations are needed with Zookeeper and HBase. The "hadoop hbase" bundle contains everything you need:
 ```sh
 juju deploy cs:bundle/hadoop-hbase-27
 ```
-To access OpenTSDB's GUI you have to expose OpenTSDB:
+Then you need to add the relations:
+```sh
+juju add-relation opentsdb hbase
+juju add-relation opentsdb zookeeper
+```
+To make OpenTSDB's GUI public you have to expose OpenTSDB:
 ```sh
 juju expose opentsdb
 ```
@@ -99,12 +104,15 @@ When you remove the relation between OpenTSDB and HBase your data will **not** b
 
 # To Do
 
-- Test clustering
-- Update readme
+- Implement clustering
 
 # Contact Information
 
 - [OpenTSDB Homepage]
+
+## Authors
+
+- Michiel Ghyselinck <michiel.ghyselinck@tengu.io>
 
 [telegraf charm]: https://jujucharms.com/telegraf/6
 [opentsdb homepage]: http://opentsdb.net/

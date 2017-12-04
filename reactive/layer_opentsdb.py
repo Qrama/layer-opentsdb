@@ -9,7 +9,7 @@ from charmhelpers.fetch.archiveurl import ArchiveUrlFetchHandler
 from charmhelpers.core import unitdata
 from charmhelpers.core.hookenv import status_set, open_port, close_port, config
 from charmhelpers.core.templating import render
-from charmhelpers.core.host import service_restart
+from charmhelpers.core.host import service_stop, service_restart
 
 # Key value store that can be used across hooks.
 DB = unitdata.kv()
@@ -105,7 +105,7 @@ def configure_hbase(hbase):
     DB.set('hbase_servers', hbase_servers)
     # Create necessary tables in HBase instance.
     # Pick a random unit to create the tables.
-    random_number = randint(0, (len(number_of_servers)-1))
+    random_number = randint(0, (number_of_servers-1))
     hbase_server = hbase_servers[random_number]
     create_tables(hbase_server['host'])
     # After the HBase relation is added we want to make sure that
@@ -122,7 +122,8 @@ def remove_zookeepers_config():
     zookeepers must be removed from config file. OpenTSDB must be restarted."""
     DB.set('zookeepers', [])
     render_config()
-    service_restart('opentsdb')
+    service_stop('opentsdb')
+    close_port(config()['port'])
     remove_state('layer-opentsdb.zookeeper-configured')
 
 
@@ -134,7 +135,8 @@ def hbase_rel_removed():
     OpenTSDB must be restarted. The data is not automatically removed because
     this could lead to unpleasant scenario's. For example: user accidentally removing
     the relation with HBase would result in complete data loss."""
-    service_restart('opentsdb')
+    service_stop('opentsdb')
+    close_port(config()['port'])
     remove_state('layer-opentsdb.hbase-configured')
 
 
@@ -173,7 +175,7 @@ def get_zookeepers_config_line():
             port = zookeeper['port']
             zookeeper_address = host + ':' + port
             config_line += zookeeper_address + ', '
-        # Remove last comma and space from line
+        # Remove last comma and space from line.
         return config_line[:-2]
 
     return config_line
