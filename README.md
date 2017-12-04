@@ -13,8 +13,7 @@ Deploy the OpenTSDB charm:
 juju deploy cs:~tengu-team/opentsdb-0
 ```
 For OpenTSDB to work relations are needed with Zookeeper and HBase. Add the relations
-when you got HBase and Zookeeper running .
-Then you need to add the relations:
+when you got HBase and Zookeeper running:
 ```sh
 juju add-relation opentsdb hbase
 juju add-relation opentsdb zookeeper
