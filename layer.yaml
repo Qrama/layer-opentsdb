@@ -1,4 +1,4 @@
-includes: ['layer:basic', 'interface:zookeeper', 'interface:hbase']
+includes: ['layer:basic', 'interface:http', 'interface:zookeeper', 'interface:hbase']
 repo: https://github.com/Qrama/layer-opentsdb.git
 options:
   basic:

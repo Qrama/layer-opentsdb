@@ -36,6 +36,15 @@ def start_layer_opentsdb():
     status_set('active', 'OpenTSDB is running.')
 
 
+@when('layer-opentsdb.started')
+@when('http.available')
+@when_not('layer-opentsdb.http-configured')
+def configure_http(http):
+    '''Configure the http relation to point to the port of OpenTSDB.'''
+    http.configure(int(config()['http_port']))
+    set_state('layer-opentsdb.http-configured')
+
+
 @when('layer-opentsdb.installed')
 @when('config.changed')
 def change_config():
@@ -51,6 +60,15 @@ def change_config():
         open_port(config()["port"])
 
     render_config()
+    service_restart('opentsdb')
+
+
+@when('layer-opentsdb.http-configured')
+@when('config.changed.http_port')
+@when('http.available')
+def update_http_relation(http):
+    new_http_port = config()['http_port']
+    http.configure(new_http_port)
     service_restart('opentsdb')
 
 

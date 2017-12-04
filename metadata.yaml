@@ -9,6 +9,9 @@ tags:
   - database
 series: ['xenial']
 subordinate: false
+provides:
+  http:
+    interface: http
 requires:
   zookeeper:
     interface: zookeeper
