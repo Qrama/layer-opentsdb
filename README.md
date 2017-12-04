@@ -52,6 +52,7 @@ With as JSON body:
 ### TCollector
 
 TCollector is a client-side process that gathers data from local collectors and pushes the data to OpenTSDB.
+
 [TCollector documentation]
 
 ### Graph
