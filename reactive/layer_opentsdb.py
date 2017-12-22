@@ -1,5 +1,18 @@
-#pylint: disable=c0111,c0325,c0301,e0401
-
+# !/usr/bin/env python3
+# Copyright (C) 2017  Qrama
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import subprocess
 from random import randint
 
@@ -7,7 +20,7 @@ import happybase
 from charms.reactive import when, when_not, set_state, remove_state
 from charmhelpers.fetch.archiveurl import ArchiveUrlFetchHandler
 from charmhelpers.core import unitdata
-from charmhelpers.core.hookenv import status_set, open_port, close_port, config
+from charmhelpers.core.hookenv import unit_private_ip, status_set, open_port, close_port, config
 from charmhelpers.core.templating import render
 from charmhelpers.core.host import service_stop, service_restart
 
@@ -43,6 +56,11 @@ def configure_http(http):
     '''Configure the http relation to point to the port of OpenTSDB.'''
     http.configure(int(config()['http_port']))
     set_state('layer-opentsdb.http-configured')
+
+
+@when('layer-opentsdb.started', 'opentsdb.available')
+def configure_provide(opentsdb):
+    opentsdb.configure(unit_private_ip(), config()['port'])
 
 
 @when('layer-opentsdb.installed')

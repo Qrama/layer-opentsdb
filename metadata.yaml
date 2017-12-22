@@ -12,6 +12,8 @@ subordinate: false
 provides:
   http:
     interface: http
+  opentsdb:
+    interface: opentsdb
 requires:
   zookeeper:
     interface: zookeeper
